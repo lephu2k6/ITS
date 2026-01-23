@@ -123,6 +123,20 @@ export function drawMap(ctx, nodes, edges, routePath = [], bounds, options = {})
       lineWidth = edge.roadType === 'highway' ? 4 : 
                   edge.roadType === 'main' ? 3 : 2;
     }
+    // Hiển thị khoảng cách (km)
+if (edge.distance !== undefined) {
+  const midX = (fromPos.x + toPos.x) / 2;
+  const midY = (fromPos.y + toPos.y) / 2;
+
+  ctx.fillStyle = "#000";
+  ctx.font = "11px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  ctx.fillText(`${edge.distance.toFixed(1)} km`, midX, midY - 8);
+
+}
+
 
     // Draw road
     ctx.strokeStyle = color;
