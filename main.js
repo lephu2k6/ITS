@@ -1,10 +1,23 @@
-import { nodes } from "./data/nodes.js";
-import { edges } from "./data/edges.js";
-import { getTrafficMultiplier, getTrafficLevel } from "./simulation/traffic.js";
-import { drawMap, drawRouteInfo, getNodeAtPosition } from "./map/renderer.js";
-import { dijkstra, findAllRoutes } from "./algorithms/dijkstra.js";
+/**
+ * Main.js - Google Maps Simulation Main Application
+ * 
+ * This simulates how Google Maps works:
+ * 1. Uses GPS coordinates (lat/lng) to represent locations
+ * 2. Models road network as a weighted graph
+ * 3. Calculates travel time based on distance + traffic
+ * 4. Uses Dijkstra algorithm to find fastest route
+ * 5. Visualizes map with traffic colors (green/yellow/red)
+ * 
+ * This is a SIMULATION for educational/research purposes.
+ * It does NOT use real Google Maps API or real GPS data.
+ */
 
-// Khởi tạo canvas
+import { nodes, edges } from './data.js';
+import { calculateDistance, distanceToTime, getBounds } from './gps.js';
+import { buildGraph, dijkstra, calculatePathDistance } from './graph.js';
+import { drawMap, drawRouteInfo, getNodeAtPosition, getTrafficMultiplier } from './renderer.js';
+
+// Initialize canvas
 const canvas = document.getElementById("map");
 if (!canvas) {
   console.error("Canvas element not found!");
@@ -12,51 +25,67 @@ if (!canvas) {
 }
 
 const ctx = canvas.getContext("2d");
-if (!ctx) {
-  console.error("Could not get 2D context!");
-  throw new Error("Could not get 2D context!");
-}
-
 const width = canvas.width;
 const height = canvas.height;
 
-console.log("Canvas initialized:", { width, height });
+console.log("Google Maps Simulation initialized");
 console.log("Nodes:", nodes);
 console.log("Edges:", edges);
 
-// State
+// Calculate edge weights (travel time) based on distance and traffic
+// This simulates how Google Maps calculates travel time
+function calculateEdgeWeights(edges, nodes) {
+  return edges.map(edge => {
+    const fromNode = nodes[edge.from];
+    const toNode = nodes[edge.to];
+    
+    // Calculate distance from GPS coordinates
+    const distance = calculateDistance(
+      { lat: fromNode.lat, lng: fromNode.lng },
+      { lat: toNode.lat, lng: toNode.lng }
+    );
+    
+    // Convert distance to base time
+    const baseTime = distanceToTime(distance, edge.roadType);
+    
+    // Apply traffic multiplier
+    const trafficMultiplier = getTrafficMultiplier(edge.trafficStatus);
+    const weight = baseTime * trafficMultiplier;
+    
+    return {
+      ...edge,
+      distance,
+      weight // Travel time in minutes
+    };
+  });
+}
+
+// Calculate edge weights
+const weightedEdges = calculateEdgeWeights(edges, nodes);
+
+// Build graph
+const graph = buildGraph(nodes, weightedEdges);
+
+// Get GPS bounds for coordinate conversion
+const bounds = getBounds(nodes);
+
+// Application state
 let state = {
   startNode: null,
   endNode: null,
-  selectedRoute: null,
-  allRoutes: [],
-  selectedNode: null,
-  hour: new Date().getHours(),
-  zoom: 1,
-  offsetX: 0,
-  offsetY: 0,
-  isDragging: false,
-  dragStart: { x: 0, y: 0 },
-  surveyData: {
-    totalRoutes: 0,
-    totalTime: 0,
-    averageTime: 0,
-    routes: []
-  }
+  route: null,
+  selectedNode: null
 };
 
 // UI Elements
 const startSelect = document.getElementById("startNode");
 const endSelect = document.getElementById("endNode");
-const hourInput = document.getElementById("hour");
-const hourDisplay = document.getElementById("hourDisplay");
-const trafficLevel = document.getElementById("trafficLevel");
-const routeInfo = document.getElementById("routeInfo");
-const surveyResults = document.getElementById("surveyResults");
 const findRouteBtn = document.getElementById("findRoute");
 const resetBtn = document.getElementById("reset");
+const routeInfo = document.getElementById("routeInfo");
+const trafficControls = document.querySelectorAll('input[name="traffic"]');
 
-// Khởi tạo dropdown
+// Initialize dropdowns
 function initDropdowns() {
   Object.keys(nodes).forEach(key => {
     const option1 = document.createElement("option");
@@ -71,94 +100,67 @@ function initDropdowns() {
   });
 }
 
-// Tìm route
+// Find optimal route using Dijkstra algorithm
 function findRoute() {
   if (!state.startNode || !state.endNode || state.startNode === state.endNode) {
-    alert("Vui lòng chọn điểm bắt đầu và điểm kết thúc khác nhau!");
+    alert("Vui lòng chọn điểm xuất phát và điểm đích khác nhau!");
     return;
   }
 
-  const traffic = getTrafficMultiplier(state.hour);
+  // Use Dijkstra algorithm to find shortest path
+  // This is how Google Maps finds optimal routes
+  const result = dijkstra(graph, state.startNode, state.endNode);
   
-  // Tìm route tối ưu bằng Dijkstra
-  const optimalRoute = dijkstra(nodes, edges, state.startNode, state.endNode, traffic);
+  if (result.path.length === 0) {
+    alert("Không tìm thấy tuyến đường!");
+    return;
+  }
+
+  // Calculate total distance
+  const totalDistance = calculatePathDistance(result.path, nodes, weightedEdges);
   
-  // Tìm tất cả các route có thể
-  state.allRoutes = findAllRoutes(nodes, edges, state.startNode, state.endNode, traffic, 3);
-  state.selectedRoute = optimalRoute;
+  state.route = {
+    ...result,
+    distance: totalDistance
+  };
 
-  // Cập nhật khảo sát
-  updateSurvey();
-
-  // Render
-  render();
+  // Update UI
   updateRouteInfo();
+  render();
 }
 
-// Cập nhật thông tin route
+// Update route information display
 function updateRouteInfo() {
-  if (!state.selectedRoute || state.selectedRoute.path.length === 0) {
-    routeInfo.innerHTML = "<p>Chưa có tuyến đường được chọn</p>";
+  if (!state.route) {
+    routeInfo.innerHTML = "<p>Chưa chọn tuyến đường</p>";
     return;
   }
 
-  const route = state.selectedRoute;
-  const traffic = getTrafficMultiplier(state.hour);
+  const route = state.route;
   
   routeInfo.innerHTML = `
-    <h4>Tuyến đường được đề xuất</h4>
+    <h4>Tuyến đường tối ưu đã tìm thấy</h4>
     <p><strong>Đường đi:</strong> ${route.path.join(" → ")}</p>
-    <p><strong>Thời gian:</strong> ${route.time.toFixed(1)} phút</p>
-    <p><strong>Hệ số giao thông:</strong> ${traffic.toFixed(2)}x</p>
-    <p><strong>Giờ:</strong> ${state.hour}:00</p>
-    ${state.allRoutes.length > 1 ? `
-      <h5>Các tuyến khác (${state.allRoutes.length - 1}):</h5>
-      <ul>
-        ${state.allRoutes.slice(1).map((r, idx) => `
-          <li>Tuyến ${idx + 2}: ${r.path.join(" → ")} - ${r.time.toFixed(1)} phút</li>
-        `).join("")}
-      </ul>
-    ` : ""}
+    <p><strong>Thời gian di chuyển:</strong> ${route.time.toFixed(1)} phút</p>
+    <p><strong>Khoảng cách:</strong> ${route.distance.toFixed(2)} km</p>
+    <p><strong>Thuật toán:</strong> Thuật toán Dijkstra</p>
   `;
 }
 
-// Cập nhật khảo sát
-function updateSurvey() {
-  state.surveyData.totalRoutes = state.allRoutes.length;
-  state.surveyData.totalTime = state.allRoutes.reduce((sum, r) => sum + r.time, 0);
-  state.surveyData.averageTime = state.surveyData.totalTime / state.surveyData.totalRoutes;
-  state.surveyData.routes = state.allRoutes;
-
-  surveyResults.innerHTML = `
-    <h4>Kết quả khảo sát</h4>
-    <p><strong>Số tuyến đường tìm được:</strong> ${state.surveyData.totalRoutes}</p>
-    <p><strong>Thời gian trung bình:</strong> ${state.surveyData.averageTime.toFixed(1)} phút</p>
-    <p><strong>Tuyến nhanh nhất:</strong> ${state.allRoutes[0]?.path.join(" → ")} (${state.allRoutes[0]?.time.toFixed(1)} phút)</p>
-    <p><strong>Tuyến chậm nhất:</strong> ${state.allRoutes[state.allRoutes.length - 1]?.path.join(" → ")} (${state.allRoutes[state.allRoutes.length - 1]?.time.toFixed(1)} phút)</p>
-  `;
-}
-
-// Render map
+// Render the map
 function render() {
-  try {
-    const highlightPath = state.selectedRoute ? [state.selectedRoute.path] : [];
-    
-    drawMap(ctx, nodes, edges, highlightPath, {
-      width,
-      height,
-      zoom: state.zoom,
-      offsetX: state.offsetX,
-      offsetY: state.offsetY,
-      selectedNode: state.selectedNode,
-      startNode: state.startNode,
-      endNode: state.endNode
-    });
+  const routePath = state.route ? state.route.path : [];
+  
+  drawMap(ctx, nodes, weightedEdges, routePath, bounds, {
+    width,
+    height,
+    startNode: state.startNode,
+    endNode: state.endNode,
+    selectedNode: state.selectedNode
+  });
 
-    if (state.selectedRoute) {
-      drawRouteInfo(ctx, state.selectedRoute, width);
-    }
-  } catch (error) {
-    console.error("Error rendering map:", error);
+  if (state.route) {
+    drawRouteInfo(ctx, state.route, width);
   }
 }
 
@@ -173,31 +175,16 @@ endSelect.addEventListener("change", (e) => {
   render();
 });
 
-hourInput.addEventListener("input", (e) => {
-  state.hour = parseInt(e.target.value);
-  hourDisplay.textContent = `${state.hour}:00`;
-  trafficLevel.textContent = getTrafficLevel(state.hour);
-  
-  // Tự động tính lại route nếu đã có
-  if (state.startNode && state.endNode) {
-    findRoute();
-  } else {
-    render();
-  }
-});
-
 findRouteBtn.addEventListener("click", findRoute);
 
 resetBtn.addEventListener("click", () => {
   state.startNode = null;
   state.endNode = null;
-  state.selectedRoute = null;
-  state.allRoutes = [];
+  state.route = null;
   state.selectedNode = null;
   startSelect.value = "";
   endSelect.value = "";
-  routeInfo.innerHTML = "";
-  surveyResults.innerHTML = "";
+  routeInfo.innerHTML = "<p>Chưa chọn tuyến đường</p>";
   render();
 });
 
@@ -207,11 +194,7 @@ canvas.addEventListener("click", (e) => {
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
   
-  const clickedNode = getNodeAtPosition(x, y, nodes, {
-    zoom: state.zoom,
-    offsetX: state.offsetX,
-    offsetY: state.offsetY
-  });
+  const clickedNode = getNodeAtPosition(x, y, nodes, bounds, width, height);
 
   if (clickedNode) {
     if (!state.startNode) {
@@ -220,12 +203,12 @@ canvas.addEventListener("click", (e) => {
     } else if (!state.endNode && clickedNode !== state.startNode) {
       state.endNode = clickedNode;
       endSelect.value = clickedNode;
-      findRoute();
+      findRoute(); // Auto-find route when both selected
     } else {
-      // Reset và chọn lại
+      // Reset and select new start
       state.startNode = clickedNode;
       state.endNode = null;
-      state.selectedRoute = null;
+      state.route = null;
       startSelect.value = clickedNode;
       endSelect.value = "";
       render();
@@ -238,99 +221,55 @@ canvas.addEventListener("mousemove", (e) => {
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
   
-  const hoveredNode = getNodeAtPosition(x, y, nodes, {
-    zoom: state.zoom,
-    offsetX: state.offsetX,
-    offsetY: state.offsetY
-  });
-
+  const hoveredNode = getNodeAtPosition(x, y, nodes, bounds, width, height);
   state.selectedNode = hoveredNode;
   canvas.style.cursor = hoveredNode ? "pointer" : "default";
   render();
 });
 
-// Zoom với scroll
-canvas.addEventListener("wheel", (e) => {
-  e.preventDefault();
-  const delta = e.deltaY > 0 ? 0.9 : 1.1;
-  state.zoom = Math.max(0.5, Math.min(2, state.zoom * delta));
-  render();
+// Traffic control (simulate changing traffic conditions)
+// This would update in real-time in actual Google Maps
+trafficControls.forEach(control => {
+  control.addEventListener("change", (e) => {
+    const edgeId = e.target.dataset.edge;
+    const newStatus = e.target.value;
+    
+    // Update traffic status
+    const edge = weightedEdges.find(e => 
+      `${e.from}-${e.to}` === edgeId || `${e.to}-${e.from}` === edgeId
+    );
+    
+    if (edge) {
+      edge.trafficStatus = newStatus;
+      // Recalculate weight
+      const trafficMultiplier = getTrafficMultiplier(newStatus);
+      edge.weight = (edge.distance / (edge.roadType === 'highway' ? 100 : 
+                     edge.roadType === 'main' ? 60 : 40)) * 60 * trafficMultiplier;
+      
+      // Rebuild graph
+      const newGraph = buildGraph(nodes, weightedEdges);
+      Object.assign(graph, newGraph);
+      
+      // Recalculate route if one exists
+      if (state.route) {
+        findRoute();
+      } else {
+        render();
+      }
+    }
+  });
 });
 
-// Pan với drag
-canvas.addEventListener("mousedown", (e) => {
-  if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
-    state.isDragging = true;
-    state.dragStart = { x: e.clientX, y: e.clientY };
-    canvas.style.cursor = "grabbing";
-  }
-});
-
-canvas.addEventListener("mousemove", (e) => {
-  if (state.isDragging) {
-    state.offsetX += (e.clientX - state.dragStart.x) / state.zoom;
-    state.offsetY += (e.clientY - state.dragStart.y) / state.zoom;
-    state.dragStart = { x: e.clientX, y: e.clientY };
-    render();
-  }
-});
-
-canvas.addEventListener("mouseup", () => {
-  state.isDragging = false;
-  canvas.style.cursor = "default";
-});
-
-canvas.addEventListener("mouseleave", () => {
-  state.isDragging = false;
-  state.selectedNode = null;
-  render();
-});
-
-// Hàm tự động căn chỉnh map vào view
-function fitMapToView() {
-  if (Object.keys(nodes).length === 0) {
-    console.warn("No nodes to fit");
-    return;
-  }
-  
-  // Tìm min/max tọa độ
-  const coords = Object.values(nodes);
-  const minX = Math.min(...coords.map(n => n.x));
-  const maxX = Math.max(...coords.map(n => n.x));
-  const minY = Math.min(...coords.map(n => n.y));
-  const maxY = Math.max(...coords.map(n => n.y));
-  
-  const mapWidth = maxX - minX;
-  const mapHeight = maxY - minY;
-  
-  console.log("Map bounds:", { minX, maxX, minY, maxY, mapWidth, mapHeight });
-  console.log("Canvas size:", { width, height });
-  
-  // Tính zoom và offset để fit vào canvas
-  const padding = 80;
-  let scaleX = (width - padding * 2) / mapWidth;
-  let scaleY = (height - padding * 2) / mapHeight;
-  
-  // Tránh chia cho 0
-  if (mapWidth === 0) scaleX = 1;
-  if (mapHeight === 0) scaleY = 1;
-  
-  state.zoom = Math.min(scaleX, scaleY, 2); // Giới hạn zoom tối đa
-  if (state.zoom < 0.1) state.zoom = 1; // Tránh zoom quá nhỏ
-  
-  // Căn giữa map
-  const centerX = (minX + maxX) / 2;
-  const centerY = (minY + maxY) / 2;
-  state.offsetX = (width / 2) / state.zoom - centerX;
-  state.offsetY = (height / 2) / state.zoom - centerY;
-  
-  console.log("Fit map:", { zoom: state.zoom, offsetX: state.offsetX, offsetY: state.offsetY });
-}
-
-// Khởi tạo
+// Initialize
 initDropdowns();
-hourInput.value = state.hour;
-hourDisplay.textContent = `${state.hour}:00`;
-trafficLevel.textContent = getTrafficLevel(state.hour);
-fitMapToView();
 render();
+
+console.log(`
+=== Google Maps Simulation ===
+This simulation demonstrates:
+1. GPS coordinates (lat/lng) represent locations
+2. Road network modeled as weighted graph
+3. Travel time = distance + traffic conditions
+4. Dijkstra algorithm finds optimal route
+5. Traffic colors: Green (light), Yellow (moderate), Red (heavy)
+`);

@@ -3,337 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Google Maps Simulation - Khảo sát Giao thông</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
-    }
-
-    .header {
-      background: linear-gradient(135deg, #4285F4 0%, #34A853 100%);
-      color: white;
-      padding: 20px 30px;
-      text-align: center;
-    }
-
-    .header h1 {
-      font-size: 28px;
-      margin-bottom: 5px;
-    }
-
-    .header p {
-      opacity: 0.9;
-      font-size: 14px;
-    }
-
-    .content {
-      display: grid;
-      grid-template-columns: 1fr 350px;
-      gap: 0;
-    }
-
-    .map-section {
-      padding: 20px;
-      background: #f8f9fa;
-    }
-
-    .map-container {
-      position: relative;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-    }
-
-    #map {
-      display: block;
-      width: 100%;
-      height: 600px;
-      cursor: crosshair;
-    }
-
-    .controls {
-      padding: 20px;
-      background: white;
-      border-left: 1px solid #e0e0e0;
-      overflow-y: auto;
-      max-height: calc(100vh - 100px);
-    }
-
-    .control-group {
-      margin-bottom: 25px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #e0e0e0;
-    }
-
-    .control-group:last-child {
-      border-bottom: none;
-    }
-
-    .control-group h3 {
-      color: #333;
-      font-size: 16px;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .control-group h3::before {
-      content: "📍";
-      font-size: 18px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: #555;
-      font-weight: 500;
-      font-size: 14px;
-    }
-
-    select, input[type="range"] {
-      width: 100%;
-      padding: 10px;
-      border: 2px solid #e0e0e0;
-      border-radius: 6px;
-      font-size: 14px;
-      transition: border-color 0.3s;
-    }
-
-    select:focus, input:focus {
-      outline: none;
-      border-color: #4285F4;
-    }
-
-    .hour-control {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .hour-display {
-      min-width: 60px;
-      text-align: center;
-      font-weight: bold;
-      color: #4285F4;
-    }
-
-    .traffic-indicator {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: bold;
-      margin-left: 10px;
-    }
-
-    .traffic-indicator.rất-đông {
-      background: #E74C3C;
-      color: white;
-    }
-
-    .traffic-indicator.đông {
-      background: #F39C12;
-      color: white;
-    }
-
-    .traffic-indicator.bình-thường {
-      background: #3498DB;
-      color: white;
-    }
-
-    .traffic-indicator.thông-thoáng {
-      background: #2ECC71;
-      color: white;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s;
-      margin-top: 10px;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #4285F4 0%, #34A853 100%);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
-    }
-
-    .btn-secondary {
-      background: #95A5A6;
-      color: white;
-    }
-
-    .btn-secondary:hover {
-      background: #7F8C8D;
-    }
-
-    .info-box {
-      background: #f8f9fa;
-      border-left: 4px solid #4285F4;
-      padding: 15px;
-      border-radius: 4px;
-      margin-top: 15px;
-    }
-
-    .info-box h4 {
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 15px;
-    }
-
-    .info-box p {
-      color: #666;
-      font-size: 13px;
-      line-height: 1.6;
-      margin-bottom: 8px;
-    }
-
-    .info-box ul {
-      margin-left: 20px;
-      color: #666;
-      font-size: 13px;
-    }
-
-    .info-box li {
-      margin-bottom: 5px;
-    }
-
-    .instructions {
-      background: #E3F2FD;
-      border-left: 4px solid #2196F3;
-      padding: 15px;
-      border-radius: 4px;
-      margin-bottom: 20px;
-    }
-
-    .instructions h4 {
-      color: #1976D2;
-      margin-bottom: 10px;
-      font-size: 14px;
-    }
-
-    .instructions ul {
-      margin-left: 20px;
-      color: #555;
-      font-size: 13px;
-    }
-
-    .instructions li {
-      margin-bottom: 5px;
-    }
-
-    @media (max-width: 1024px) {
-      .content {
-        grid-template-columns: 1fr;
-      }
-
-      .controls {
-        border-left: none;
-        border-top: 1px solid #e0e0e0;
-      }
-    }
-  </style>
+  <title>Mô phỏng Google Maps - GPS & Thuật toán Đồ thị</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>🗺️ Mô phỏng Google Maps - Khảo sát Giao thông</h1>
-      <p>Hệ thống tìm đường và khảo sát lưu lượng giao thông thông minh</p>
+      <h1>🗺️ Mô phỏng Google Maps</h1>
+      <p>Minh họa tọa độ GPS, thuật toán đồ thị và định tuyến theo giao thông</p>
     </div>
 
     <div class="content">
       <div class="map-section">
         <div class="map-container">
-          <canvas id="map" width="800" height="600"></canvas>
+          <canvas id="map" width="1000" height="700"></canvas>
         </div>
       </div>
 
       <div class="controls">
         <div class="instructions">
-          <h4>📖 Hướng dẫn sử dụng:</h4>
+          <h4>📖 Cách hoạt động của mô phỏng:</h4>
           <ul>
-            <li>Chọn điểm bắt đầu và điểm kết thúc từ dropdown</li>
-            <li>Hoặc click trực tiếp trên bản đồ để chọn điểm</li>
-            <li>Điều chỉnh giờ để xem ảnh hưởng của giao thông</li>
-            <li>Scroll để zoom, Ctrl + Drag để pan</li>
-            <li>Click "Tìm đường" để tính toán tuyến đường tối ưu</li>
+            <li><strong>Tọa độ GPS:</strong> Các vị trí sử dụng tọa độ lat/lng mô phỏng</li>
+            <li><strong>Mô hình đồ thị:</strong> Mạng lưới đường = đồ thị có trọng số (nodes + edges)</li>
+            <li><strong>Thời gian di chuyển:</strong> Khoảng cách (km) + Điều kiện giao thông</li>
+            <li><strong>Thuật toán:</strong> Dijkstra tìm tuyến đường nhanh nhất</li>
+            <li><strong>Màu giao thông:</strong> Xanh (thông thoáng), Vàng (trung bình), Đỏ (tắc nghẽn)</li>
           </ul>
         </div>
 
         <div class="control-group">
-          <h3>Điểm bắt đầu</h3>
-          <label for="startNode">Chọn điểm xuất phát:</label>
+          <h3>Điểm xuất phát</h3>
+          <label for="startNode">Chọn điểm bắt đầu:</label>
           <select id="startNode">
-            <option value="">-- Chọn điểm --</option>
+            <option value="">-- Chọn vị trí --</option>
           </select>
         </div>
 
         <div class="control-group">
-          <h3>Điểm kết thúc</h3>
-          <label for="endNode">Chọn điểm đích:</label>
+          <h3>Điểm đích</h3>
+          <label for="endNode">Chọn điểm đến:</label>
           <select id="endNode">
-            <option value="">-- Chọn điểm --</option>
+            <option value="">-- Chọn vị trí --</option>
           </select>
         </div>
 
         <div class="control-group">
-          <h3>Thời gian</h3>
-          <label for="hour">Giờ trong ngày (0-23):</label>
-          <div class="hour-control">
-            <input type="range" id="hour" min="0" max="23" value="8" />
-            <span class="hour-display" id="hourDisplay">8:00</span>
-          </div>
-          <p style="margin-top: 10px; font-size: 12px; color: #666;">
-            Mức độ giao thông: 
-            <span class="traffic-indicator" id="trafficLevel">Đông</span>
-          </p>
-        </div>
-
-        <div class="control-group">
-          <button class="btn btn-primary" id="findRoute">🔍 Tìm đường tối ưu</button>
-          <button class="btn btn-secondary" id="reset">🔄 Reset</button>
+          <button class="btn btn-primary" id="findRoute">🔍 Tìm tuyến đường tối ưu</button>
+          <button class="btn btn-secondary" id="reset">🔄 Đặt lại</button>
         </div>
 
         <div class="control-group">
           <div class="info-box" id="routeInfo">
-            <p>Chưa có tuyến đường được chọn</p>
+            <p>Chưa chọn tuyến đường</p>
           </div>
         </div>
 
         <div class="control-group">
-          <div class="info-box" id="surveyResults">
-            <h4>Kết quả khảo sát</h4>
-            <p>Chưa có dữ liệu khảo sát</p>
+          <h3>Chú giải giao thông</h3>
+          <div class="traffic-legend">
+            <div class="traffic-legend-item">
+              <div class="traffic-legend-color green"></div>
+              <span>Thông thoáng</span>
+            </div>
+            <div class="traffic-legend-item">
+              <div class="traffic-legend-color yellow"></div>
+              <span>Trung bình</span>
+            </div>
+            <div class="traffic-legend-item">
+              <div class="traffic-legend-color red"></div>
+              <span>Tắc nghẽn</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="info-box">
+            <h4>📚 Chi tiết kỹ thuật</h4>
+            <p><strong>Hệ thống GPS:</strong> Tọa độ mô phỏng (lat, lng)</p>
+            <p><strong>Tính khoảng cách:</strong> Khoảng cách Euclid đơn giản</p>
+            <p><strong>Cấu trúc đồ thị:</strong> Biểu diễn danh sách kề</p>
+            <p><strong>Thuật toán:</strong> Dijkstra tìm đường ngắn nhất</p>
+            <p><strong>Ảnh hưởng giao thông:</strong> Nhân thời gian (1x, 1.5x, 2.5x)</p>
           </div>
         </div>
       </div>
