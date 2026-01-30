@@ -61,6 +61,8 @@ body {
 /* Control Panel */
 .control-panel {
     flex: 0 0 350px;
+    max-height: 95vh;
+    overflow-y: auto;
     background: white;
     border-radius: 10px;
     padding: 20px;
@@ -297,6 +299,105 @@ body {
 
 .route-summary strong {
     color: #2c3e50;
+}
+
+/* Ghi chú cho người dùng */
+.help-section {
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+.help-details {
+    background: #f0f7ff;
+    border: 1px solid #b8d4e8;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.help-details summary {
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    user-select: none;
+}
+.help-details summary::-webkit-details-marker {
+    display: none;
+}
+.help-details summary::before {
+    content: '▶';
+    font-size: 10px;
+    transition: transform 0.2s;
+}
+.help-details[open] summary::before {
+    transform: rotate(90deg);
+}
+.help-content {
+    padding: 12px 16px 20px;
+    font-size: 0.95rem;
+    color: #333;
+    line-height: 1.6;
+    min-height: 200px;
+}
+.help-content p {
+    margin: 12px 0 8px;
+}
+.help-content p:first-child {
+    margin-top: 0;
+}
+.help-content ul {
+    margin: 6px 0 14px;
+    padding-left: 22px;
+}
+.help-content li {
+    margin-bottom: 8px;
+}
+.legend-inline {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 4px;
+    border: 2px solid rgba(0,0,0,0.2);
+}
+.legend-inline.start { background: #27ae60; }
+.legend-inline.end { background: #e74c3c; }
+.legend-inline.stop { background: #3498db; }
+.legend-inline.route-opt {
+    width: 20px;
+    height: 4px;
+    border-radius: 2px;
+    background: #e67e22;
+    border: none;
+}
+.route-colors-legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+    margin: 8px 0 12px;
+    font-size: 0.85rem;
+}
+.route-color-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.route-color-item .route-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+.help-note {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed #bdc3c7;
 }
 
 /* Content Area */

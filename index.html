@@ -97,6 +97,43 @@
                         <!-- Sẽ được cập nhật bằng JavaScript -->
                     </div>
                 </div>
+
+                <!-- Ghi chú cho người dùng (mở sẵn để người dùng thấy đầy đủ) -->
+                <div class="panel-section help-section">
+                    <details class="help-details" open>
+                        <summary><i class="fas fa-info-circle"></i> Ghi chú cho người dùng</summary>
+                        <div class="help-content">
+                            <p><strong>Cách dùng:</strong></p>
+                            <ul>
+                                <li>Chọn <strong>điểm xuất phát</strong> và <strong>điểm đến</strong> bằng dropdown hoặc <strong>click trực tiếp</strong> lên trạm trên bản đồ / đồ thị (click 1 = xuất phát, click 2 = điểm đến).</li>
+                                <li>Chọn tiêu chí (thời gian / ít chuyển xe / giá vé), giờ xuất phát (nếu cần), rồi bấm <strong>Tìm Tuyến Đường</strong>.</li>
+                                <li>Bấm <strong>So Sánh</strong> để xem các phương án thay thế; <strong>Đặt Lại</strong> để xóa và chọn lại.</li>
+                            </ul>
+                            <p><strong>Ý nghĩa các đường vẽ trên bản đồ / đồ thị:</strong></p>
+                            <ul>
+                                <li><span class="legend-inline start"></span> <strong>Điểm xuất phát</strong> (xanh lá)</li>
+                                <li><span class="legend-inline end"></span> <strong>Điểm đến</strong> (đỏ)</li>
+                                <li><span class="legend-inline stop"></span> <strong>Trạm xe bus</strong> (xanh dương)</li>
+                                <li><span class="legend-inline route-opt"></span> <strong>Tuyến tối ưu</strong> (cam đậm) – đường đi đã tìm được</li>
+                                <li><strong>Đường nét liền</strong> (nhiều màu) = tuyến xe bus (mỗi tuyến một màu)</li>
+                                <li><strong>Đường nét đứt</strong> (tím) = đoạn đi bộ chuyển tuyến</li>
+                            </ul>
+                            <p><strong>Màu các tuyến xe bus:</strong></p>
+                            <div id="routeColorsLegend" class="route-colors-legend">
+                                <!-- Sẽ được điền bằng JS từ busData hoặc giữ nội dung tĩnh -->
+                                <div class="route-color-item"><span class="route-dot" style="background:#E74C3C"></span> Tuyến 44</div>
+                                <div class="route-color-item"><span class="route-dot" style="background:#3498DB"></span> Tuyến 30</div>
+                                <div class="route-color-item"><span class="route-dot" style="background:#27AE60"></span> Tuyến 56</div>
+                                <div class="route-color-item"><span class="route-dot" style="background:#9B59B6"></span> Tuyến 104</div>
+                                <div class="route-color-item"><span class="route-dot" style="background:#16A085"></span> Tuyến 08</div>
+                                <div class="route-color-item"><span class="route-dot" style="background:#D35400"></span> Tuyến 50</div>
+                                <div class="route-color-item"><span class="route-dot" style="background:#8E44AD"></span> Tuyến 61-77</div>
+                                <div class="route-color-item"><span class="route-dot" style="background:#1ABC9C"></span> Tuyến 52</div>
+                            </div>
+                            <p class="help-note">Dữ liệu trạm và tuyến: Bình Thạnh, Thủ Đức (TP.HCM), Bình Dương. Tọa độ và lộ trình gần đúng so với thực tế.</p>
+                        </div>
+                    </details>
+                </div>
             </div>
 
             <!-- Main Content: Map and Details -->
