@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Tìm Tuyến Xe Bus Tối Ưu</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-bus"></i>
+                <h1>HỆ THỐNG TÌM TUYẾN XE BUS TỐI ƯU</h1>
+            </div>
+            <p class="subtitle">Sử dụng thuật toán Dijkstra để tìm lộ trình tốt nhất</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: Controls -->
+            <div class="control-panel">
+                <div class="panel-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> Chọn Điểm</h3>
+                    <div class="form-group">
+                        <label for="startPoint"><i class="fas fa-play-circle"></i> Điểm xuất phát:</label>
+                        <select id="startPoint" class="select-box">
+                            <option value="">-- Chọn điểm xuất phát --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="endPoint"><i class="fas fa-flag-checkered"></i> Điểm đến:</label>
+                        <select id="endPoint" class="select-box">
+                            <option value="">-- Chọn điểm đến --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="click-hint">
+                        <i class="fas fa-mouse-pointer"></i> Hoặc click trực tiếp lên bản đồ
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3><i class="fas fa-sliders-h"></i> Tiêu Chí Tối Ưu</h3>
+                    <div class="criteria-group">
+                        <label class="radio-label">
+                            <input type="radio" name="criteria" value="time" checked>
+                            <span class="radio-custom"></span>
+                            <span class="radio-text">Thời gian ngắn nhất</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="criteria" value="transfers">
+                            <span class="radio-custom"></span>
+                            <span class="radio-text">Ít chuyển xe nhất</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="criteria" value="fare">
+                            <span class="radio-custom"></span>
+                            <span class="radio-text">Giá vé rẻ nhất</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3><i class="fas fa-clock"></i> Thời Gian</h3>
+                    <div class="form-group">
+                        <label for="departureTime"><i class="fas fa-clock"></i> Giờ xuất phát:</label>
+                        <input type="time" id="departureTime" value="08:00" class="time-input">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user-clock"></i> Thời gian chờ tối đa:</label>
+                        <div class="range-slider">
+                            <input type="range" id="maxWaitTime" min="5" max="30" value="15" step="5">
+                            <span id="waitTimeValue">15 phút</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="findRouteBtn" class="btn-primary">
+                        <i class="fas fa-route"></i> Tìm Tuyến Đường
+                    </button>
+                    <button id="resetBtn" class="btn-secondary">
+                        <i class="fas fa-redo"></i> Đặt Lại
+                    </button>
+                    <button id="compareBtn" class="btn-info">
+                        <i class="fas fa-balance-scale"></i> So Sánh
+                    </button>
+                </div>
+
+                <!-- Kết quả tìm kiếm -->
+                <div id="resultPanel" class="result-panel hidden">
+                    <h3><i class="fas fa-map-signs"></i> Kết Quả Tìm Kiếm</h3>
+                    <div id="routeSummary" class="route-summary">
+                        <!-- Sẽ được cập nhật bằng JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content: Map and Details -->
+            <div class="content-area">
+                <!-- Tabs: Bản đồ thật / Đồ thị -->
+                <div class="view-tabs">
+                    <button type="button" class="view-tab active" data-view="map" aria-pressed="true">
+                        <i class="fas fa-map-marked-alt"></i> Bản đồ thật
+                    </button>
+                    <button type="button" class="view-tab" data-view="graph" aria-pressed="false">
+                        <i class="fas fa-project-diagram"></i> Đồ thị tuyến
+                    </button>
+                </div>
+                <!-- Map Container (Leaflet - bản đồ thật) -->
+                <div id="mapView" class="map-view active">
+                    <div id="leafletMap" class="leaflet-map"></div>
+                    <div class="map-legend">
+                        <div class="legend-item"><span class="legend-dot start"></span> Điểm xuất phát</div>
+                        <div class="legend-item"><span class="legend-dot end"></span> Điểm đến</div>
+                        <div class="legend-item"><span class="legend-dot stop"></span> Trạm xe bus</div>
+                        <div class="legend-item"><span class="legend-line route-opt"></span> Tuyến tối ưu</div>
+                    </div>
+                </div>
+                <!-- Graph View (đồ thị dễ nhìn) -->
+                <div id="graphView" class="graph-view">
+                    <div class="graph-container">
+                        <svg id="graphSvg" viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg"></svg>
+                    </div>
+                    <div class="graph-legend">
+                        <div class="legend-item"><span class="legend-dot start"></span> Xuất phát</div>
+                        <div class="legend-item"><span class="legend-dot end"></span> Đích</div>
+                        <div class="legend-item"><span class="legend-dot node"></span> Trạm</div>
+                        <div class="legend-item"><span class="legend-line bus"></span> Xe bus</div>
+                        <div class="legend-item"><span class="legend-line walk"></span> Đi bộ</div>
+                    </div>
+                </div>
+
+                <!-- Route Details -->
+                <div id="routeDetails" class="route-details hidden">
+                    <h3><i class="fas fa-list-alt"></i> Chi Tiết Hành Trình</h3>
+                    <div id="stepByStep" class="step-by-step">
+                        <!-- Sẽ được cập nhật bằng JavaScript -->
+                    </div>
+                    
+                    <div class="route-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-label">Tổng thời gian</div>
+                                <div id="totalTime" class="stat-value">-- phút</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-exchange-alt"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-label">Số lần chuyển xe</div>
+                                <div id="transferCount" class="stat-value">--</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-label">Tổng chi phí</div>
+                                <div id="totalFare" class="stat-value">-- đ</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-road"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-label">Khoảng cách</div>
+                                <div id="totalDistance" class="stat-value">-- km</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Đồ án: Tối ưu hóa lộ trình xe bus sử dụng thuật toán Dijkstra</p>
+            <p class="footer-info">
+                <i class="fas fa-code"></i> Được phát triển với HTML5, Canvas API và JavaScript
+            </p>
+        </footer>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="data/busData.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/graph.js"></script>
+    <script src="js/dijkstra.js"></script>
+    <script src="js/busSystem.js"></script>
+    <script src="js/mapView.js"></script>
+    <script src="js/graphView.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

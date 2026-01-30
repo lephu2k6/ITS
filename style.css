@@ -1,0 +1,637 @@
+/* Reset và cơ bản */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header */
+.header {
+    background: linear-gradient(90deg, #2c3e50, #4a6491);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.logo i {
+    font-size: 2.5rem;
+    color: #3498db;
+}
+
+.logo h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.subtitle {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin-left: 55px;
+}
+
+/* Main Layout */
+.main-content {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* Control Panel */
+.control-panel {
+    flex: 0 0 350px;
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.panel-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.panel-section:last-child {
+    border-bottom: none;
+}
+
+.panel-section h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+}
+
+.panel-section h3 i {
+    color: #3498db;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.select-box, .time-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    background: #f8f9fa;
+}
+
+.select-box:focus, .time-input:focus {
+    outline: none;
+    border-color: #3498db;
+    background: white;
+}
+
+.click-hint {
+    background: #e3f2fd;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    color: #1565c0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Radio buttons */
+.criteria-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.3s;
+}
+
+.radio-label:hover {
+    background: #f5f5f5;
+}
+
+.radio-label input {
+    display: none;
+}
+
+.radio-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #3498db;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+}
+
+.radio-label input:checked + .radio-custom::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: #3498db;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.radio-text {
+    font-size: 0.95rem;
+}
+
+/* Range slider */
+.range-slider {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 5px;
+}
+
+.range-slider input {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    background: #ddd;
+    border-radius: 3px;
+    outline: none;
+}
+
+.range-slider input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #3498db;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+#waitTimeValue {
+    font-weight: 600;
+    color: #3498db;
+    min-width: 60px;
+}
+
+/* Buttons */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.btn-primary, .btn-secondary, .btn-info {
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, #3498db, #2980b9);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(90deg, #2980b9, #1c5a8a);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.btn-secondary {
+    background: #ecf0f1;
+    color: #2c3e50;
+}
+
+.btn-secondary:hover {
+    background: #d5dbdb;
+    transform: translateY(-2px);
+}
+
+.btn-info {
+    background: #9b59b6;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #8e44ad;
+    transform: translateY(-2px);
+}
+
+/* Result Panel */
+.result-panel {
+    margin-top: 25px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+}
+
+.result-panel.hidden {
+    display: none;
+}
+
+.route-summary {
+    margin-top: 15px;
+}
+
+.route-summary h4 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.route-summary p {
+    margin-bottom: 8px;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.route-summary strong {
+    color: #2c3e50;
+}
+
+/* Content Area */
+.content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Tabs: Bản đồ thật / Đồ thị */
+.view-tabs {
+    display: flex;
+    gap: 0;
+    background: #ecf0f1;
+    padding: 4px;
+    border-radius: 10px;
+    width: fit-content;
+}
+.view-tab {
+    padding: 12px 24px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #7f8c8d;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.25s;
+}
+.view-tab:hover {
+    color: #2c3e50;
+    background: rgba(255,255,255,0.6);
+}
+.view-tab.active {
+    background: white;
+    color: #3498db;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.view-tab i {
+    font-size: 1.1rem;
+}
+
+/* Map View (Leaflet) */
+.map-view,
+.graph-view {
+    display: none;
+    flex: 1;
+    min-height: 480px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    position: relative;
+}
+.map-view.active,
+.graph-view.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.leaflet-map {
+    flex: 1;
+    min-height: 450px;
+    width: 100%;
+    border-radius: 0 0 10px 10px;
+}
+
+.map-view .map-legend,
+.graph-view .graph-legend {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.96);
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    font-size: 0.85rem;
+    color: #2c3e50;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.legend-dot.start { background: #27ae60; border: 2px solid #1e8449; }
+.legend-dot.end { background: #e74c3c; border: 2px solid #c0392b; }
+.legend-dot.stop,
+.legend-dot.node { background: #3498db; border: 2px solid #2980b9; }
+.legend-line {
+    display: inline-block;
+    width: 24px;
+    height: 4px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+.legend-line.route-opt { background: #e67e22; }
+.legend-line.bus { background: #3498db; }
+.legend-line.walk { background: #9b59b6; border: none; background-image: repeating-linear-gradient(90deg, #9b59b6 0, #9b59b6 4px, transparent 4px, transparent 8px); }
+
+/* Graph View (SVG) */
+.graph-container {
+    flex: 1;
+    min-height: 450px;
+    overflow: auto;
+    padding: 12px;
+    background: #f8fafc;
+}
+.graph-container svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 480px;
+    border-radius: 8px;
+}
+.graph-view .graph-node:hover circle {
+    filter: brightness(1.15);
+}
+.graph-view .graph-node {
+    transition: transform 0.15s;
+}
+.graph-view .graph-node:hover {
+    transform: scale(1.05);
+}
+
+/* Leaflet custom marker - bỏ viền mặc định */
+.leaflet-map .custom-marker {
+    background: none !important;
+    border: none !important;
+}
+
+/* Route Details */
+.route-details {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.route-details.hidden {
+    display: none;
+}
+
+.route-details h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.step-by-step {
+    margin-bottom: 25px;
+}
+
+.step-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+}
+
+.step-item.walk {
+    border-left-color: #9b59b6;
+}
+
+.step-item.bus {
+    border-left-color: #e74c3c;
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    background: #3498db;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.step-item.walk .step-icon {
+    background: #9b59b6;
+}
+
+.step-item.bus .step-icon {
+    background: #e74c3c;
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-title {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.step-details {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.step-time {
+    font-weight: 600;
+    color: #3498db;
+    min-width: 80px;
+    text-align: right;
+}
+
+/* Stats */
+.route-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.stat-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: transform 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    background: #3498db;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.stat-card:nth-child(2) .stat-icon {
+    background: #9b59b6;
+}
+
+.stat-card:nth-child(3) .stat-icon {
+    background: #2ecc71;
+}
+
+.stat-card:nth-child(4) .stat-icon {
+    background: #f39c12;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-size: 0.9rem;
+    border-top: 1px solid #ddd;
+    margin-top: 30px;
+}
+
+.footer-info {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .control-panel {
+        flex: none;
+        width: 100%;
+    }
+    
+    .content-area {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header {
+        padding: 15px 20px;
+    }
+    
+    .logo h1 {
+        font-size: 1.4rem;
+    }
+    
+    .route-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+}
