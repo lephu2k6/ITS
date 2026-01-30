@@ -11,7 +11,7 @@ class MapRenderer {
         this.hoverNode = null;
         this.route = null;
         
-        // Tọa độ bounds cho mapping
+        
         this.bounds = this.calculateBounds();
         
         // Tỷ lệ zoom
