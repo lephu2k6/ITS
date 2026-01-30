@@ -1,6 +1,6 @@
 // Dữ liệu trạm xe buýt THỰC TẾ: Bình Thạnh, Thủ Đức, Bình Dương
 // Nguồn: xe-buyt.com, BRVT TP.HCM, tuyến 44/30/56/104/08/50/61-77
-// Tọa độ GPS gần đúng theo địa chỉ thực tế
+
 
 const busSystem = {
     stops: {
