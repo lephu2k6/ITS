@@ -48,32 +48,51 @@ function getRouteColor(routeId) {
     return route ? route.color : "#95A5A6";
 }
 
-// Kiểm tra xem một đoạn đường có đang tắc không
+// Chuyển chuỗi giờ "HH:mm" hoặc "H:mm" hoặc "HH:mm:ss" thành số phút (0–1439)
+function parseTimeToMinutes(timeStr) {
+    if (!timeStr || typeof timeStr !== 'string') return 0;
+    const parts = timeStr.trim().split(':').map(p => parseInt(p, 10) || 0);
+    const h = parts[0] || 0;
+    const m = parts[1] || 0;
+    return Math.min(23 * 60 + 59, h * 60 + m);
+}
+
+// Giờ cao điểm mặc định: 07:00-09:00 và 16:00-18:00 (áp dụng khi không có specialSegment)
+const RUSH_HOUR_RANGES = [
+    [7 * 60 + 0, 9 * 60 + 0],
+    [16 * 60 + 0, 18 * 60 + 0]
+];
+const RUSH_HOUR_MULTIPLIER = 1.35;
+
+// Kiểm tra xem một đoạn đường có đang tắc không (theo giờ xuất phát / giờ hiện tại)
 function checkTrafficCondition(fromStopId, toStopId, currentTime) {
-    const segment = busSystem.specialSegments.find(s => 
+    const nowMinutes = parseTimeToMinutes(currentTime);
+
+    const segments = (busSystem.specialSegments || []);
+    const segment = segments.find(s =>
         (s.from === fromStopId && s.to === toStopId) ||
         (s.from === toStopId && s.to === fromStopId)
     );
-    
-    if (!segment) return 1.0;
-    
-    const now = currentTime.split(':').map(Number);
-    const nowMinutes = now[0] * 60 + now[1];
-    
-    let isActive = false;
-    segment.activeHours.forEach(timeRange => {
-        const [start, end] = timeRange.split('-');
-        const [startHour, startMin] = start.split(':').map(Number);
-        const [endHour, endMin] = end.split(':').map(Number);
-        const startMinutes = startHour * 60 + startMin;
-        const endMinutes = endHour * 60 + endMin;
-        
-        if (nowMinutes >= startMinutes && nowMinutes <= endMinutes) {
-            isActive = true;
+
+    if (segment && segment.activeHours && segment.activeHours.length) {
+        let isActive = false;
+        for (const timeRange of segment.activeHours) {
+            const [startStr, endStr] = timeRange.split('-').map(s => (s || '').trim());
+            const startMinutes = parseTimeToMinutes(startStr);
+            const endMinutes = parseTimeToMinutes(endStr);
+            if (nowMinutes >= startMinutes && nowMinutes <= endMinutes) {
+                isActive = true;
+                break;
+            }
         }
-    });
-    
-    return isActive ? segment.multiplier : 1.0;
+        if (isActive) return segment.multiplier;
+    }
+
+    // Áp dụng giờ cao điểm toàn cục: bất kỳ đoạn nào cũng chậm hơn trong khung giờ này
+    for (const [start, end] of RUSH_HOUR_RANGES) {
+        if (nowMinutes >= start && nowMinutes <= end) return RUSH_HOUR_MULTIPLIER;
+    }
+    return 1.0;
 }
 
 // Tìm trạm gần nhất với tọa độ

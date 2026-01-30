@@ -1,3 +1,7 @@
+// Dữ liệu trạm xe buýt THỰC TẾ: Bình Thạnh, Thủ Đức, Bình Dương
+// Nguồn: xe-buyt.com, BRVT TP.HCM, tuyến 44/30/56/104/08/50/61-77
+// Tọa độ GPS gần đúng theo địa chỉ thực tế
+
 const busSystem = {
     stops: {
         // ========== BÌNH THẠNH (BS01–BS10) ==========
@@ -284,7 +288,10 @@ const busSystem = {
             condition: "traffic_jam",
             multiplier: 1.5,
             activeHours: ["07:00-08:30", "16:30-18:30"]
-        }
+        },
+        { from: "BS10", to: "BS13", condition: "traffic_jam", multiplier: 1.6, activeHours: ["07:00-09:00", "16:00-18:00"] },
+        { from: "BS13", to: "BS11", condition: "traffic_jam", multiplier: 1.5, activeHours: ["07:00-09:00", "16:00-18:00"] },
+        { from: "BS11", to: "BS16", condition: "traffic_jam", multiplier: 1.4, activeHours: ["07:00-08:30", "16:30-18:30"] }
     ]
 };
 

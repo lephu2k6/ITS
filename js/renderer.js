@@ -491,13 +491,17 @@ class RouteRenderer {
             return;
         }
         
-        container.innerHTML = steps.map(step => `
+        container.innerHTML = steps.map(step => {
+            const trafficNote = (step.trafficMultiplier != null && step.trafficMultiplier > 1)
+                ? `<span class="traffic-note" title="Giờ cao điểm"> <i class="fas fa-traffic-light"></i> ×${step.trafficMultiplier.toFixed(1)}</span>`
+                : '';
+            return `
             <div class="step-item ${(step.type || '').toLowerCase()}">
                 <div class="step-icon">
                     ${step.icon || (step.type === 'BUS' ? '🚌' : step.type === 'WALK' ? '🚶' : '⏱️')}
                 </div>
                 <div class="step-content">
-                    <div class="step-title">${step.description || 'Di chuyển'}</div>
+                    <div class="step-title">${step.description || 'Di chuyển'}${trafficNote}</div>
                     <div class="step-details">
                         ${step.distance ? `<span><i class="fas fa-ruler"></i> ${(step.distance || 0).toFixed(2)} km</span>` : ''}
                         ${step.routeNumber ? `<span><i class="fas fa-bus"></i> Tuyến ${step.routeNumber}</span>` : ''}
@@ -508,7 +512,8 @@ class RouteRenderer {
                     ${step.arrivalTime ? `<div class="arrival-time">${step.arrivalTime}</div>` : ''}
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
 
     

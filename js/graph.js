@@ -29,14 +29,21 @@ function buildBusGraph(criteria = 'time', departureTime = '08:00') {
             const trafficMultiplier = checkTrafficCondition(fromStop, toStop, departureTime);
             travelTime *= trafficMultiplier;
             
-            // Tính thời gian chờ trung bình (chỉ áp dụng khi bắt đầu từ trạm)
-            const waitTime = calculateWaitTime(route.frequency);
-            
-            // Tính trọng số theo tiêu chí
+            // Thời gian chờ thực tế theo tần suất tuyến
+            const rawWaitTime = calculateWaitTime(route.frequency);
+            const maxWait = (typeof busRouteSystem !== 'undefined' && busRouteSystem.settings)
+                ? busRouteSystem.settings.maxWaitTime
+                : 15;
+            // Ràng buộc cứng: chỉ thêm cạnh nếu thời gian chờ <= thời gian chờ tối đa người dùng chọn
+            if (rawWaitTime > maxWait) continue;
+
+            const waitTime = rawWaitTime;
+
+            // Tính trọng số theo tiêu chí (time = thời gian di chuyển + thời gian chờ)
             let weight;
             switch(criteria) {
                 case 'time':
-                    weight = travelTime;
+                    weight = travelTime + waitTime;
                     break;
                 case 'fare':
                     weight = route.fare;

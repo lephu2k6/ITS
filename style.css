@@ -583,6 +583,13 @@ body {
     border-left-color: #e74c3c;
 }
 
+.step-title .traffic-note {
+    font-size: 0.85rem;
+    color: #e67e22;
+    margin-left: 6px;
+    font-weight: 600;
+}
+
 .step-icon {
     width: 40px;
     height: 40px;

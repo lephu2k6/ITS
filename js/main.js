@@ -15,12 +15,30 @@ class BusRouteApp {
 
     init() {
         this.initDropdowns();
+        this.syncSettingsFromDOM();
         this.initViews();
         this.setupEventListeners();
         this.syncViews();
         setTimeout(() => {
             showNotification('Hệ thống đã sẵn sàng! Chọn điểm xuất phát và điểm đến để bắt đầu.', 'success');
         }, 1000);
+    }
+
+    /** Đồng bộ giờ xuất phát và thời gian chờ tối đa từ form → state và busRouteSystem (gọi khi init và khi cần đảm bảo giá trị đúng). */
+    syncSettingsFromDOM() {
+        const timeInput = document.getElementById('departureTime');
+        const waitSlider = document.getElementById('maxWaitTime');
+        const waitValueEl = document.getElementById('waitTimeValue');
+        if (timeInput) {
+            this.departureTime = timeInput.value || '08:00';
+        }
+        if (waitSlider) {
+            const val = parseInt(waitSlider.value, 10);
+            if (!isNaN(val)) {
+                busRouteSystem.settings.maxWaitTime = val;
+                if (waitValueEl) waitValueEl.textContent = `${val} phút`;
+            }
+        }
     }
 
     initViews() {
@@ -168,15 +186,25 @@ class BusRouteApp {
             return;
         }
         
+        // Luôn đọc giờ xuất phát và thời gian chờ tối đa từ form (áp dụng đúng khi tìm tuyến)
+        this.syncSettingsFromDOM();
+        const timeInput = document.getElementById('departureTime');
+        const waitSlider = document.getElementById('maxWaitTime');
+        if (timeInput) this.departureTime = timeInput.value || this.departureTime;
+        const rawMaxWait = waitSlider ? parseInt(waitSlider.value, 10) : busRouteSystem.settings.maxWaitTime;
+        const maxWaitMins = (typeof rawMaxWait === 'number' && !isNaN(rawMaxWait)) ? rawMaxWait : 15;
+        busRouteSystem.settings.maxWaitTime = maxWaitMins;
+
         // Hiển thị loading
         showNotification('Đang tìm tuyến đường tối ưu...', 'info');
-        
-        // Tìm route
+
+        // Tìm route (đồ thị dùng departureTime + maxWaitTime từ settings)
         const route = busRouteSystem.findOptimalRoute(
             this.startStop,
             this.endStop,
             this.currentCriteria,
-            this.departureTime
+            this.departureTime,
+            maxWaitMins
         );
         
         if (!route) {

@@ -21,7 +21,8 @@ class BusRouteSystem {
      * @param {string} departureTime - Giờ xuất phát 'HH:mm'
      * @returns {Object|null} Chi tiết tuyến đường hoặc null nếu không tìm thấy
      */
-    findOptimalRoute(startStopId, endStopId, criteria = 'time', departureTime = '08:00') {
+    findOptimalRoute(startStopId, endStopId, criteria = 'time', departureTime = '08:00', maxWaitTime = null) {
+        if (maxWaitTime != null) this.settings.maxWaitTime = maxWaitTime;
         const graph = buildBusGraph(criteria, departureTime);
         const result = dijkstraMultiCriteria(graph, startStopId, endStopId, criteria);
 
@@ -45,6 +46,13 @@ class BusRouteSystem {
 
         this.findAlternativeRoutes(startStopId, endStopId, criteria, departureTime);
         return detailedResult;
+    }
+
+    /** Lấy thời gian chờ đã giới hạn theo thiết lập người dùng (dùng khi hiển thị chi tiết). */
+    getCappedWaitTime(edgeWaitTime) {
+        const max = this.settings.maxWaitTime;
+        if (edgeWaitTime == null) return 0;
+        return Math.min(Number(edgeWaitTime), max);
     }
 
     /**
@@ -89,7 +97,7 @@ class BusRouteSystem {
 
                 if (currentRouteId && currentRouteId !== edge.routeId) {
                     summary.transfers++;
-                    const waitTime = edge.waitTime || 0;
+                    const waitTime = this.getCappedWaitTime(edge.waitTime);
                     const waitStep = {
                         number: stepNumber++,
                         type: 'WAIT',
@@ -151,6 +159,7 @@ class BusRouteSystem {
 
     _buildBusStep(edge, route, fromInfo, toInfo, number, currentTime) {
         const duration = edge.travelTime || 0;
+        const trafficMultiplier = edge.trafficMultiplier != null ? edge.trafficMultiplier : 1;
         return {
             number,
             type: 'BUS',
@@ -166,7 +175,8 @@ class BusRouteSystem {
             routeColor: route.color,
             icon: '🚌',
             color: route.color,
-            arrivalTime: this.addMinutes(currentTime, duration)
+            arrivalTime: this.addMinutes(currentTime, duration),
+            trafficMultiplier
         };
     }
 
